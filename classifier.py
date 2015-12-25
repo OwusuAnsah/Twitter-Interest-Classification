@@ -19,14 +19,12 @@ from collections import Counter
 test_data = pandas.read_csv('test_data.csv') # csv file with 2 headers: name, interest
 Count_Vectorizer, Tfidf_Transformer, starttime, cachedStopwords, myStopwords, snowball, porter, selector, lancaster = None, None, None, None, None, None, None, None, None
 
-# Call this function to run the program. It takes in 2 variables.
-# First, a pandas dataframe defined above, which reads a csv file
-# Second, a boolean which determines if the classifiers are loaded from file, or trained from scratch
+# Call this function to run the program. It takes in a boolean which determines if the classifiers are loaded from file, or trained from scratch
 def run(loadFromSave):
 	dataframe = extractAllTweets(d=None) # createUserDict() returns a dictionary
 	print("Initializing variables and environment")
 	initializeCV()
-	tfidf_doc, interestLabels = getFeatureVectorAndLabels(dataframe,selectFeatures = True) # true: feature selection ON and vice versa
+	tfidf_doc, interestLabels = getFeatureVectorAndLabels(dataframe,selectFeatures = True) # true: feature selection ON
 
 	if loadFromSave:
 		# joblib is an sklearn library that allows us to save / load the trained classifiers
@@ -41,15 +39,6 @@ def run(loadFromSave):
 		joblib.dump(LogRegr,'classifiers/logregr.pkl')
 		SVMClassifier = trainSVM(tfidf_doc,interestLabels,"sgd")
 		joblib.dump(SVMClassifier,'classifiers/svm.pkl')
-		# uncomment to train classifiers using other kernels (NOT RECOMMENDED)
-		# SVMClassifier_linear = trainSVM(tfidf_doc,interestLabels,"linear")
-		# SVMClassifier_poly = trainSVM(tfidf_doc,interestLabels,"poly")
-		# SVMClassifier_rbf = trainSVM(tfidf_doc,interestLabels,"rbf")
-		# SVMClassifier_sigmoid = trainSVM(tfidf_doc,interestLabels,"sigmoid")
-		# joblib.dump(SVMClassifier_linear,'classifiers/svm_linear.pkl')
-		# joblib.dump(SVMClassifier_poly,'classifiers/svm_poly.pkl')
-		# joblib.dump(SVMClassifier_rbf,'classifiers/svm_rbf.pkl')
-		# joblib.dump(SVMClassifier_sigmoid,'classifiers/svm_sigmoid.pkl')
 	classifiers = [NBClassifier,SVMClassifier,LogRegr]
 
 	printKFoldScore(NBClassifier,tfidf_doc,interestLabels,"NBClassifier")
@@ -300,4 +289,5 @@ def testClassifier(classifiers,dataframe):
 				print(listOfHandles[j] + " is " + interestLabels[j] + " but predicted as " + predictedInterests[j])
 		print(str(correct) + "/" + str(len(interestLabels)) + " users predicted correctly")
 
-run(loadFromSave=True) # true if loading classifiers from file, false if retraining classifiers
+if __name__ == '__main__':
+	run(loadFromSave=True) # true if loading classifiers from file, false if retraining classifiers

@@ -54,21 +54,32 @@ def run(loadFromSave):
 	# testClassifier(classifiers,test_data)
 
 	print("\n\n###### HOW WELL DO YOU KNOW YOUR TWITTER FRIENDS ######")
-	print("Hello Varun, generating list of friends")
+	print("Hello Varun, let's see how well you know your friends\n")
 	global api
 	api = authTwitter(5)
 	friendslist = api.friends_ids('varunpatro')
-	while True:
-		print("Press Ctrl+D to exit")
+	users = api.friends()
+	currentScore = 0
+	for i in range(10):
 		targetFriend = api.get_user(random.choice(friendslist))
-		print("What do you think " + targetFriend.screen_name + " is interested in?")
-		# TODO: pick a random friend from your twitter list and print it
-		# TODO: ask user to guess the interest of said friend
-		# TODO: calculate the interest of the friend and compare
-		# TODO: update high score if necessary
-		targetHandle = input("Please enter a valid twitter handle: ")
-		targetInterest_NB = predictInterest(targetHandle,classifiers,400,selectFeatures = True)
-		print(targetHandle + " => " + targetInterest_NB + " (NBClassifier)")
+		user=""
+		for u in users:
+			if u.screen_name == targetFriend.screen_name:
+				user = u.name
+				break
+		print("What do you think " + user + " (" + targetFriend.screen_name + ") is interested in?")
+		print("Pick one of the following choices:")
+		print("Fashion, Finance, Food, Gaming, Inspiration, Music, News, Politics, Sports, Tech")
+		guess = input("Enter your guess here: ")
+		actual = predictInterest(targetFriend.screen_name,classifiers,400,selectFeatures = True)
+
+		if str(guess).lower() == str(actual).lower():
+			currentScore += 1
+			print("Correct!")
+		else:
+			print("I'm sorry, " + user + " is interested in " + str(actual))
+
+		print("Your current score is: " + str(currentScore) + "/" + str(i+1) +"\n")
 
 # returns a dictionary where the key values are the interest categories and values are a list of twitter handles
 def createUserDict():
@@ -229,7 +240,7 @@ def mineTweets(targetHandle,numOfTweets):
 	api = authTwitter(3)
 	listOfTweets = []
 	counter = numOfTweets // 200 # max number of tweets per request is 200
-	print('Mining %s tweets from %s' % ((counter)*200, targetHandle))
+	# print('Mining %s tweets from %s' % ((counter)*200, targetHandle))
 	batch = api.user_timeline(screen_name = targetHandle,count=200)
 	listOfTweets.extend(batch)
 	lastId = listOfTweets[-1].id - 1

@@ -17,7 +17,7 @@ from accesstokenTwitter import * # python file containing a list of access token
 from collections import Counter
 
 test_data = pandas.read_csv('test_data.csv') # csv file with 2 headers: name, interest
-Count_Vectorizer, Tfidf_Transformer, starttime, cachedStopwords, myStopwords, snowball, porter, selector, lancaster = None, None, None, None, None, None, None, None, None
+Count_Vectorizer, Tfidf_Transformer, starttime, cachedStopwords, myStopwords, snowball, porter, selector, lancaster, api = None, None, None, None, None, None, None, None, None, None
 
 # Call this function to run the program. It takes in a boolean which determines if the classifiers are loaded from file, or trained from scratch
 def run(loadFromSave):
@@ -41,20 +41,31 @@ def run(loadFromSave):
 		joblib.dump(SVMClassifier,'classifiers/svm.pkl')
 	classifiers = [NBClassifier,SVMClassifier,LogRegr]
 
-	printKFoldScore(NBClassifier,tfidf_doc,interestLabels,"NBClassifier")
+	# printKFoldScore(NBClassifier,tfidf_doc,interestLabels,"NBClassifier")
 	# uncomment to see kfold score for the other classifiers
 	# printKFoldScore(SVMClassifier,tfidf_doc,interestLabels,"SVMClassifier")
 	# printKFoldScore(LogRegr,tfidf_doc,interestLabels,"LogRegr")
 	
-	printMetrics(NBClassifier,tfidf_doc,interestLabels,"NBClassifier")
+	# printMetrics(NBClassifier,tfidf_doc,interestLabels,"NBClassifier")
 	# uncomment to see classification report and confusion matrix for the other classifiers
 	# printMetrics(SVMClassifier,tfidf_doc,interestLabels,"SVMClassifier")
 	# printMetrics(LogRegr,tfidf_doc,interestLabels,"LogRegr")
 
-	testClassifier(classifiers,test_data)
+	# testClassifier(classifiers,test_data)
 
+	print("\n\n###### HOW WELL DO YOU KNOW YOUR TWITTER FRIENDS ######")
+	print("Hello Varun, generating list of friends")
+	global api
+	api = authTwitter(5)
+	friendslist = api.friends_ids('varunpatro')
 	while True:
 		print("Press Ctrl+D to exit")
+		targetFriend = api.get_user(random.choice(friendslist))
+		print("What do you think " + targetFriend.screen_name + " is interested in?")
+		# TODO: pick a random friend from your twitter list and print it
+		# TODO: ask user to guess the interest of said friend
+		# TODO: calculate the interest of the friend and compare
+		# TODO: update high score if necessary
 		targetHandle = input("Please enter a valid twitter handle: ")
 		targetInterest_NB = predictInterest(targetHandle,classifiers,400,selectFeatures = True)
 		print(targetHandle + " => " + targetInterest_NB + " (NBClassifier)")
@@ -83,6 +94,7 @@ def extractAllTweets(d):
 	else:
 		with open('extracted_tweets.csv','w') as data:
 			w = csv.writer(data)
+			global api
 			w.writerow(['name','interest','text'])
 			api = authTwitter(random.randrange(0,5))
 			starttime = datetime.datetime.now()
@@ -213,6 +225,7 @@ def predictInterest(targetHandle,classifiers,numTweets,selectFeatures):
 
 # calls the twitter API to return a number of tweets from a specified twitter handle
 def mineTweets(targetHandle,numOfTweets):
+	global api
 	api = authTwitter(3)
 	listOfTweets = []
 	counter = numOfTweets // 200 # max number of tweets per request is 200
@@ -232,7 +245,7 @@ def removeUrl(text):
 	return re.sub(r'^https?:\/\/.*[\r\n]*', '', text)
 
 def authTwitter(keyNum):
-	keys = accesstokenlist[keyNum]
+	keys = accesstokenlist[5]
 	auth = tweepy.auth.OAuthHandler(keys[0], keys[1])
 	auth.set_access_token(keys[2], keys[3])
 	return tweepy.API(auth)

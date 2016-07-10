@@ -1,11 +1,10 @@
-INSTRUCTIONS
-============
-1. Run dependencies.py. If error, install manually each package in the packages array.
-2. Run classifier.py. The executable function is on the last line, called run().
+#Twitter Interest Classification#
 
 
-FILE DETAILS
-============
+Install required packages by typing `python dependencies.py` into your shell.
+Then, run the script by typing `python classifier.py`.
+
+###File Details###
 - accesstokenTwitter.py: contains an array of 5 twitter keys
 - extracted_tweets.csv: sample output from the twitter extraction function. Not required for classifier.py
 - test_data.csv: testing data
